@@ -1,0 +1,33 @@
+<div class="uploadedPostFeed">
+  <h2>Here you can see posts from the community 🧼</h2>
+  <div class="filter-button-div">
+    <form action="/viewPost" method="get">
+      <label for="photo-hashtag-filter" class="select-hashtags">
+        <i class="fas fa-filter filter-icon"></i> &nbsp;</label
+      >
+      <select name="hashtags" id="post-hashtags" onchange="this.form.submit()">
+        {{range .AvailableHashtags}}
+        <option value="{{ . }}" {{if eq . $.SelectedHashtag}} selected {{end}}>
+          {{.}}
+        </option>
+        {{end}}
+      </select>
+    </form>
+  </div>
+
+  {{ range .Posts}}
+  <div class="postFeed" id="postFeed">
+    <p>{{.DisplayTime}}</p>
+    <div class="post-images">
+      {{if .PhotoURL}}
+      <img src="{{.PhotoURL}}" />
+      {{end}} {{if .PhotoURLAfter}}
+      <img src="{{.PhotoURLAfter}}" />
+      {{end}}
+    </div>
+    <h3>{{.Title}}</h3>
+    <h4>{{.Description}}</h4>
+    <p class="hashtagsPosts">{{.Hashtags}}</p>
+  </div>
+  {{end}}
+</div>

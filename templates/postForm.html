@@ -1,0 +1,41 @@
+<div class="container">
+    <h1 class="heading">Share Your Cleaning Story; in photos. 📸</h1>
+    <div class="post-form">
+        <h2 class="form-heading"></h2>
+        <h2 class="upload-heading">Upload Photos</h2>
+        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data" >
+            <input type="file" name="file" accept="image/*" class="file-input">
+            <input type="file" name="afterFile" accept="image/*" class="file-input">
+            <button class="upload-btn">Upload</button>
+        </form>
+        <form method="POST" action="/posts" id="postForm">
+            <textarea type="text" id="title" name="title" placeholder="Photo Caption" class="textarea-field"></textarea>
+            <textarea placeholder="Description of photo(s)" name="description"class="textarea-field"></textarea>
+            <label for= "photo hashtag" class="select-hashtag"><i class="fas fa-hashtag"></i></label>
+            <select name="hashtags" id="post-hashtags">
+                <option value="bathrooms">bathrooms</option>
+                 <option value="kitchens">kitchens</option>
+                  <option value="windows">windows</option>
+                   <option value="ovens">ovens</option>
+<!-- /* Check if .PhotoURL is not empty * -->
+            {{ if .PhotoURL}}
+            <input type="hidden" name="photoUrl" value={{.PhotoURL}}>
+            {{ end }}
+
+<!-- /* Check if .PhotoURLAfter is not empty * -->
+            {{ if .PhotoURLAfter}}
+            <input type="hidden" name="photoUrlAfter" value={{.PhotoURLAfter}}>
+            {{ end }}
+
+            <button type="submit" class="submit-btn">Post</button>
+        </form>
+<!--  Check if .PhotoURL and PhotoURLAfter is not empty to display images  -->
+        {{if .PhotoURL}}
+        <div id="output" class="image-container">
+            <img src="{{.PhotoURL}}">
+            <img src="{{.PhotoURLAfter}}">
+        </div>
+        {{end}}
+
+    </div>
+</div>

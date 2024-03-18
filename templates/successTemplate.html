@@ -1,0 +1,18 @@
+<div class="success-post">
+  <h1>You've successfully added a post 🎉</h1>
+  <h3>{{.Post.Title}}</h3>
+  <h4>{{.Post.Description}}</h4>
+  <p class="hashtagsPosts">{{.Post.Hashtags}}</p>
+  <div class="image-success-container">
+    {{if .Post.PhotoURL}}
+    <img src="{{.Post.PhotoURL}}" />
+    {{end}} {{if .Post.PhotoURLAfter}}
+    <img src="{{.Post.PhotoURLAfter}}" />
+    {{end}}
+  </div>
+  <div class="view-post-btn-div">
+    <a href="./viewPost"
+      ><button class="viewPost-btn">View Your Post</button>
+    </a>
+  </div>
+</div>
