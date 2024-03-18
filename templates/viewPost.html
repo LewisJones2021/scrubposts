@@ -6,6 +6,7 @@
         <i class="fas fa-filter filter-icon"></i> &nbsp;</label
       >
       <select name="hashtags" id="post-hashtags" onchange="this.form.submit()">
+        <option value="">all posts</option>
         {{range .AvailableHashtags}}
         <option value="{{ . }}" {{if eq . $.SelectedHashtag}} selected {{end}}>
           {{.}}
@@ -27,7 +28,17 @@
     </div>
     <h3>{{.Title}}</h3>
     <h4>{{.Description}}</h4>
-    <p class="hashtagsPosts">{{.Hashtags}}</p>
+    <div class="hashtags-likes">
+      <p class="hashtagsPosts">{{.Hashtags}}</p>
+
+      <button
+        class="likes-button"
+        hx-post="/like/{{.ID}}"
+        hx-target="#likeCount{{.ID}}">
+        <i class="fas fa-heart"></i>
+      </button>
+      <span class="like-count" id="likeCount{{ .ID }}">{{.Likes}}</span>
+    </div>
   </div>
   {{end}}
 </div>

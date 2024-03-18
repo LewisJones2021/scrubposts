@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"mime/multipart"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,9 +24,13 @@ type Post struct {
 	DateCreated       time.Time `json:"date_created"`
 	DisplayTime       string    `json:"display_time"`
 	Hashtags          string    `json:"hashtags"`
-	SelectedHashtag   string    `json:"selectedHashtags`
-	AvailableHashtags string    `json:"availableHashtags`
+	SelectedHashtag   string    `json:"selectedHashtags"`
+	AvailableHashtags string    `json:"availableHashtags"`
+	Likes             int       `json:"likes"`
 }
+
+// map to store number of likes for each post
+var likeCounts map[int]int
 
 func main() {
 	// open a connection to the data base
@@ -66,7 +71,7 @@ func main() {
 		// Get the selected hashtag from the query parameters
 		selectedHashtag := c.Query("hashtags")
 		fmt.Println("fetched hashtags", selectedHashtag)
-		query := "SELECT id, title, description, photo_url, photo_url_after, hashtags, date_created FROM posts "
+		query := "SELECT id, title, description, photo_url, photo_url_after, hashtags, date_created, likes FROM posts "
 		fmt.Println(query)
 
 		// If a hashtag is provided, modify the query to filter posts by the hashtag
@@ -88,7 +93,7 @@ func main() {
 		var posts []Post
 		for rows.Next() {
 			var post Post
-			if err := rows.Scan(&post.ID, &post.Title, &post.Description, &post.PhotoURL, &post.PhotoURLAfter, &post.Hashtags, &post.DateCreated); err != nil {
+			if err := rows.Scan(&post.ID, &post.Title, &post.Description, &post.PhotoURL, &post.PhotoURLAfter, &post.Hashtags, &post.DateCreated, &post.Likes); err != nil {
 				fmt.Println("Error: error scanning the data", err)
 				return err
 			}
@@ -113,6 +118,37 @@ func main() {
 	})
 
 	// post endpoints
+
+	// Initialize like counts map
+	likeCounts = make(map[int]int)
+	app.Post("/like/:id", func(c *fiber.Ctx) error {
+
+		// Parse post ID from URL params
+		id, err := strconv.Atoi(c.Params("id"))
+		if err != nil {
+			fmt.Println("Error getting the id from the url params", err)
+		}
+
+		// Increment like count for the post
+		likeCounts[id]++
+
+		// Increment like count for the post in the database
+		_, err = db.Exec("UPDATE posts SET likes = likes +1 WHERE id = $1", id)
+		if err != nil {
+			fmt.Println("Error updating the likes in the db:", err)
+			return err
+		}
+
+		// Return updated like count from the database
+		var likes int
+		err = db.QueryRow("SELECT likes FROM posts WHERE id = $1", id).Scan(&likes)
+		if err != nil {
+			fmt.Println("Error fetching like count from database:", err)
+			return err
+		}
+		// Return updated like count
+		return c.SendString(strconv.Itoa(likes))
+	})
 
 	// Define an API endpoint for storing posts
 	app.Post("/posts", func(c *fiber.Ctx) error {

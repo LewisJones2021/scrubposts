@@ -170,6 +170,7 @@ body {
   border-radius: 5px;
 }
 
+
 @media screen and (max-width: 600px) {
   .success-post {
     padding: 20px; /* Adjusted padding */
@@ -265,6 +266,14 @@ body {
   border-color: #218838; /* Change border color on hover */
 }
 
+.hashtags-likes{
+  display: flex;
+  align-items: center;
+}
+.hashtags-likes i{
+display: block;
+color: green;
+}
 .filter-button-div {
   display: flex;
   align-items: center;
