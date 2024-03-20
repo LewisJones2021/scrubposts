@@ -1,6 +1,7 @@
 package ipcache
 
 import (
+	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -34,13 +35,13 @@ func New() *Cache {
 	}
 
 	// clear the ip cache every 5 minutes
-	background.Go(backgroundCachceClearer(c))
+	background.Go(BackgroundCacheClearer(c))
 
 	return c
 }
 
 // backgroundCacheClearer clears up stale entries from the ipcache on a time.Ticker schedule.
-func backgroundCacheClearer(c *Cache) func() {
+func BackgroundCacheClearer(c *Cache) func() {
 	// Return an anonymous function that clears expired cache items at a regular interval.
 	return func() {
 		// Execute the following code block repeatedly at intervals of 30 seconds.
@@ -60,6 +61,7 @@ func backgroundCacheClearer(c *Cache) func() {
 					// If the ip was cached over 5 minutes ago, go ahead and delete it.
 					if item.InitialRequestTime.Before(time.Now().Add(-cacheExpirationTime * time.Minute)) {
 						slog.Info("found ip to be deleted", "ip:", ip)
+						fmt.Println(ip)
 						// delete the ip from the cache
 						delete(c.cache, ip)
 					}
@@ -70,27 +72,29 @@ func backgroundCacheClearer(c *Cache) func() {
 }
 
 // Set adds the item to the cache
-func (c *Cache) Set(ip string) {
+func (c *Cache) Set(ip, id string) error {
 	// Lock the mutex to ensure exclusive access to the cache while setting the item.
 	c.mu.Lock()
 	// Unlock the mutex when the function exits, regardless of whether it panics or returns normally.
 	defer c.mu.Unlock()
-	// Add the IP address to the cache with its corresponding cache item.
-	c.cache[ip] = &IPCacheItem{
+
+	// Add the IP address and post ID combination to the cache.
+	key := ip + "_" + id
+	fmt.Println("Setting cache key:", key)
+	c.cache[ip+"_"+id] = &IPCacheItem{
 		// Set the initial request time to the current time.
 		InitialRequestTime: time.Now(),
 	}
-
+	// no error
+	return nil
 }
 
-// Has returns true if the ip exists in the cache
-func (c *Cache) Has(ip string) bool {
+// Has returns true if the IP address and post ID combination exists in the cache
+func (c *Cache) Has(ip, id string) (bool, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-
-	item, ok := c.cache[ip]
-	if ok {
-		item.LastSeenAt = time.Now()
-	}
-	return ok
+	key := ip + "_" + id
+	_, ok := c.cache[ip+"_"+id]
+	fmt.Println("Checking cache key:", key)
+	return ok, nil
 }

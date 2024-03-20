@@ -1,4 +1,4 @@
-module github.com/samverrall/cleaningcommunity
+module github.com/lewisjones2021/scrubposts
 
 go 1.22.1
 

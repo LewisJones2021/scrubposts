@@ -10,6 +10,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
+	"github.com/lewisjones2021/scrubposts/pkg/ipcache"
 
 	_ "github.com/lib/pq"
 )
@@ -29,10 +30,12 @@ type Post struct {
 	Likes             int       `json:"likes"`
 }
 
-// map to store number of likes for each post
-var likeCounts map[int]int
-
 func main() {
+
+	cache := ipcache.New()
+	// Start cache cleanup routine in the background
+	go ipcache.BackgroundCacheClearer(cache)
+
 	// open a connection to the data base
 	db, err := sql.Open("postgres", "user=postgres dbname=scrubposts sslmode=disable")
 	if err != nil {
@@ -119,21 +122,39 @@ func main() {
 
 	// post endpoints
 
-	// Initialize like counts map
-	likeCounts = make(map[int]int)
 	app.Post("/like/:id", func(c *fiber.Ctx) error {
-
 		// Parse post ID from URL params
-		id, err := strconv.Atoi(c.Params("id"))
+		id := c.Params("id")
+
+		// Get client IP address
+		ip := c.IP()
+
+		// check if the ip exists in the cache.
+
+		exists, err := cache.Has(ip, id)
 		if err != nil {
-			fmt.Println("Error getting the id from the url params", err)
+			fmt.Println("error checking the cache", err)
+			return err
 		}
 
-		// Increment like count for the post
-		likeCounts[id]++
+		if exists {
+			// ip exists in the cache
+			fmt.Println("ip already liked this post", ip)
+			return c.SendStatus(fiber.StatusConflict)
+		}
+
+		// Convert the post ID to an integer
+		postId, err := strconv.Atoi(id)
+		if err != nil {
+			fmt.Println("Error getting the id from the url params", err)
+			return err
+		}
+
+		// Update cache with the post ID and user IP address
+		cache.Set(ip, id)
 
 		// Increment like count for the post in the database
-		_, err = db.Exec("UPDATE posts SET likes = likes +1 WHERE id = $1", id)
+		_, err = db.Exec("UPDATE posts SET likes = likes + 1 WHERE id = $1", postId)
 		if err != nil {
 			fmt.Println("Error updating the likes in the db:", err)
 			return err
@@ -141,11 +162,12 @@ func main() {
 
 		// Return updated like count from the database
 		var likes int
-		err = db.QueryRow("SELECT likes FROM posts WHERE id = $1", id).Scan(&likes)
+		err = db.QueryRow("SELECT likes FROM posts WHERE id = $1", postId).Scan(&likes)
 		if err != nil {
 			fmt.Println("Error fetching like count from database:", err)
 			return err
 		}
+
 		// Return updated like count
 		return c.SendString(strconv.Itoa(likes))
 	})
@@ -215,4 +237,5 @@ func main() {
 	}
 
 	fmt.Println("Server running")
+
 }
