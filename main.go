@@ -61,6 +61,9 @@ func main() {
 	// serve uploads
 	app.Static("/uploads", "./uploads")
 
+	// Define the signup route
+	app.Post("/signup", SignUp)
+
 	// get endpoints
 
 	// define the route for the HTMX homepage

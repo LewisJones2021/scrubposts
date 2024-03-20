@@ -91,9 +91,12 @@ func (c *Cache) Set(ip, id string) error {
 
 // Has returns true if the IP address and post ID combination exists in the cache
 func (c *Cache) Has(ip, id string) (bool, error) {
+	// Lock the mutex (synchronization mechanism) to ensure exclusive access to the cache while reading from it.
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+	// Construct the cache key using the IP address and post ID.
 	key := ip + "_" + id
+	// Retrieve the value from the cache using the constructed key.
 	_, ok := c.cache[ip+"_"+id]
 	fmt.Println("Checking cache key:", key)
 	return ok, nil
