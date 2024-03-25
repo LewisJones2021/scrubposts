@@ -8,11 +8,13 @@ import (
 	"strconv"
 	"time"
 
+	_ "github.com/lib/pq"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
 	"github.com/lewisjones2021/scrubposts/pkg/ipcache"
 
-	_ "github.com/lib/pq"
+	"github.com/lewisjones2021/scrubposts/users"
 )
 
 // data object (struct) that represent the Post fields.
@@ -55,6 +57,16 @@ func main() {
 			DisableStartupMessage: false,
 		},
 	)
+	// Define routes that require authentication
+
+	// app.Get("/viewPost", func(ctx *fiber.Ctx) error {
+	// 	// This handler is only executed if the user is authenticated
+	// 	return ctx.SendString("Welcome to the Scrub Feed")
+	// })
+
+	app.Get("/upload", func(ctx *fiber.Ctx) error {
+		return ctx.SendString("Welcome to the Upload page!")
+	})
 
 	// serve static files
 	app.Static("/", "./public")
@@ -62,15 +74,29 @@ func main() {
 	app.Static("/uploads", "./uploads")
 
 	// Define the signup route
-	app.Post("/signup", SignUp)
+	app.Get("/signup", users.SignUpPage())
+
+	// Handle signup form submission
+	app.Post("/signup", users.SignUp(db))
+
+	// define the login route
+	app.Get("/login", users.Login)
+
+	// Handle login form submission
+	app.Post("/login", users.LoginSubmit(db))
+
+	// Apply the isAuthenticated middleware to routes that require authentication
 
 	// get endpoints
 
 	// define the route for the HTMX homepage
 	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Render("postForm", fiber.Map{"PhotoURL": ""})
+		return c.Render("login", fiber.StatusSeeOther)
 	})
 
+	app.Get("/upload", func(c *fiber.Ctx) error {
+		return c.Render("postForm", fiber.Map{})
+	})
 	// api endpoint for the viewpost page.
 	app.Get("/viewPost", func(c *fiber.Ctx) error {
 
