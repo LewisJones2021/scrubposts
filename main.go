@@ -12,8 +12,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
+	"github.com/lewisjones2021/scrubposts/middleware"
 	"github.com/lewisjones2021/scrubposts/pkg/ipcache"
-
 	"github.com/lewisjones2021/scrubposts/users"
 )
 
@@ -30,6 +30,7 @@ type Post struct {
 	SelectedHashtag   string    `json:"selectedHashtags"`
 	AvailableHashtags string    `json:"availableHashtags"`
 	Likes             int       `json:"likes"`
+	IsAuthenticated   bool      `json:"is_authenticated"`
 }
 
 func main() {
@@ -57,17 +58,6 @@ func main() {
 			DisableStartupMessage: false,
 		},
 	)
-	// Define routes that require authentication
-
-	// app.Get("/viewPost", func(ctx *fiber.Ctx) error {
-	// 	// This handler is only executed if the user is authenticated
-	// 	return ctx.SendString("Welcome to the Scrub Feed")
-	// })
-
-	app.Get("/upload", func(ctx *fiber.Ctx) error {
-		return ctx.SendString("Welcome to the Upload page!")
-	})
-
 	// serve static files
 	app.Static("/", "./public")
 	// serve uploads
@@ -85,20 +75,24 @@ func main() {
 	// Handle login form submission
 	app.Post("/login", users.LoginSubmit(db))
 
-	// Apply the isAuthenticated middleware to routes that require authentication
+	// logout endpoint
+	app.Get("/logout", middleware.IsAuthenticated(), users.LogoutHandler)
 
 	// get endpoints
 
 	// define the route for the HTMX homepage
-	app.Get("/", func(c *fiber.Ctx) error {
+	app.Get("/", middleware.IsAuthenticated(), func(c *fiber.Ctx) error {
 		return c.Render("login", fiber.StatusSeeOther)
 	})
 
-	app.Get("/upload", func(c *fiber.Ctx) error {
+	app.Get("/upload", middleware.IsAuthenticated(), func(c *fiber.Ctx) error {
 		return c.Render("postForm", fiber.Map{})
 	})
 	// api endpoint for the viewpost page.
-	app.Get("/viewPost", func(c *fiber.Ctx) error {
+	app.Get("/viewPost", middleware.IsAuthenticated(), func(c *fiber.Ctx) error {
+
+		// Assuming isAuthenticated is true after successful authentication
+		isAuthenticated := true
 
 		// Get the selected hashtag from the query parameters
 		selectedHashtag := c.Query("hashtags")
@@ -146,6 +140,7 @@ func main() {
 			"Posts":             posts,
 			"SelectedHashtag":   selectedHashtag,
 			"AvailableHashtags": availableHashtags,
+			"IsAuthenticated":   isAuthenticated,
 		})
 	})
 

@@ -70,7 +70,6 @@ body {
   color: #333;
   margin-bottom: 10px;
 }
-
 .file-input {
   display: inline-block;
   margin-bottom: 20px;
@@ -596,4 +595,11 @@ button a {
 .login-form a:hover{
   color: #218838;
   font-weight: bolder;
+}
+
+.fa-sign-in-alt{
+  color:white;
+}
+.logout-button .fa-sign-in-alt:hover{
+  color: rgb(156, 16, 16);
 }

@@ -1,4 +1,4 @@
-package main
+package middleware
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func isAuthenticated() fiber.Handler {
+func IsAuthenticated() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		// Get JWT token from the request cookies
 		cookie := ctx.Cookies("jwt")
@@ -17,7 +17,6 @@ func isAuthenticated() fiber.Handler {
 		}
 
 		// Parse JWT token
-
 		token, err := jwt.Parse(cookie, func(token *jwt.Token) (interface{}, error) {
 			// Check the signing method used
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

@@ -67,6 +67,20 @@ func SignUp(db *sql.DB) fiber.Handler {
 				c.Status(fiber.StatusBadRequest).SendString("Error creating user and inserting into db.")
 			}
 
+			// Generate JWT token
+			token, err := generateJWT(email)
+			if err != nil {
+				return err
+			}
+
+			// Set JWT token in cookie
+			c.Cookie(&fiber.Cookie{
+				Name:     "jwt",
+				Value:    token,
+				Expires:  time.Now().Add(5 * time.Minute),
+				HTTPOnly: true,
+			})
+
 			// Redirect to the main page after successful signup
 			return c.Redirect("/viewPost", fiber.StatusSeeOther)
 		}
@@ -129,11 +143,12 @@ func LoginSubmit(db *sql.DB) fiber.Handler {
 			if err != nil {
 				return err
 			}
+
 			// Set JWT token in cookie
 			c.Cookie(&fiber.Cookie{
 				Name:     "jwt",
 				Value:    token,
-				Expires:  time.Now().Add(24 * time.Hour),
+				Expires:  time.Now().Add(5 * time.Minute),
 				HTTPOnly: true,
 			})
 			// Redirect to homepage successful login
@@ -142,4 +157,16 @@ func LoginSubmit(db *sql.DB) fiber.Handler {
 		// Render login page
 		return c.Render("login", fiber.Map{})
 	}
+}
+
+// log user out function
+func LogoutHandler(ctx *fiber.Ctx) error {
+	// Clear the JWT token cookie
+	ctx.Cookie(&fiber.Cookie{
+		Name:   "jwt",
+		Value:  "",
+		MaxAge: -1,
+	})
+	// Redirect to the login page or any other page after logout
+	return ctx.Redirect("/login")
 }
