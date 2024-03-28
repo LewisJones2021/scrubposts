@@ -41,30 +41,30 @@ func SignUp(db *sql.DB) fiber.Handler {
 
 			row := db.QueryRow("SELECT COUNT(*) FROM users WHERE email = $1", email)
 			if err := row.Scan(&userCount); err != nil {
-				return c.Status(fiber.StatusBadRequest).SendString("Error checking if user exists")
+				return c.SendString("Error checking if user exists")
 			}
 
 			if userCount > 0 {
-				return c.Status(fiber.StatusBadRequest).SendString("User already exists")
+				return c.SendString("User already exists")
 
 			}
 
 			// check data isn't empty on signing up form
 			if email == "" || password == "" {
-				return c.Status(fiber.StatusBadRequest).SendString("Email and password are required")
+				return c.SendString("Email and password are required")
 			}
 
 			// hash the password for security.
 			hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
 			if err != nil {
-				return c.Status(fiber.StatusBadRequest).SendString("Error hashing the password")
+				return c.SendString("Error hashing the password")
 			}
 
 			// insert the user into the database
 			_, err = db.Exec("INSERT INTO users (email, password) VALUES ($1, $2)", email, string(hashedPassword))
 			if err != nil {
-				c.Status(fiber.StatusBadRequest).SendString("Error creating user and inserting into db.")
+				c.SendString("Error creating user and inserting into db.")
 			}
 
 			// Generate JWT token
@@ -80,9 +80,11 @@ func SignUp(db *sql.DB) fiber.Handler {
 				Expires:  time.Now().Add(5 * time.Minute),
 				HTTPOnly: true,
 			})
-
+			// set htmx location header to tell it to send the front-end to this page
+			c.Set("HX-Location", "/viewPost")
 			// Redirect to the main page after successful signup
-			return c.Redirect("/viewPost", fiber.StatusSeeOther)
+			// return c.Redirect("/viewPost", fiber.StatusSeeOther)
+			return c.SendStatus(fiber.StatusOK)
 		}
 
 		// render signup form
@@ -125,7 +127,7 @@ func LoginSubmit(db *sql.DB) fiber.Handler {
 
 			// check data isn't empty on signing up form
 			if email == "" || password == "" {
-				return c.Status(fiber.StatusBadRequest).SendString("Email and password are required")
+				return c.SendString("Email and password are required")
 			}
 
 			// Query the database to get the user
@@ -133,14 +135,14 @@ func LoginSubmit(db *sql.DB) fiber.Handler {
 			err := db.QueryRow("SELECT password FROM users WHERE email =$1", email).Scan(&storedPassword)
 			if err != nil {
 				if err == sql.ErrNoRows {
-					return c.Status(fiber.StatusUnauthorized).SendString("Invalid email or password during login")
+					return c.SendString("Invalid email or password during login")
 				}
 				return err
 			}
 
 			// check hashed password matches stored pasword
 			if err := bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(password)); err != nil {
-				return c.Status(fiber.StatusUnauthorized).SendString("Invalid email or password during login")
+				return c.SendString("Invalid email or password during login")
 			}
 
 			// Generate JWT token
@@ -156,8 +158,12 @@ func LoginSubmit(db *sql.DB) fiber.Handler {
 				Expires:  time.Now().Add(5 * time.Minute),
 				HTTPOnly: true,
 			})
+			// set htmx location header to tell it to send the front-end to this page
+			c.Set("HX-Location", "/viewPost")
+
 			// Redirect to homepage successful login
-			return c.Redirect("/viewPost")
+			// return c.Redirect("/viewPost", fiber.StatusSeeOther)
+			return c.SendStatus(fiber.StatusOK)
 		}
 		// Render login page
 		return c.Render("login", fiber.Map{})

@@ -34,6 +34,8 @@ func IsAuthenticated() fiber.Handler {
 		if !token.Valid {
 			return ctx.Redirect("/login")
 		}
+
+		ctx.Locals("IsAuthenticated", true)
 		// User is authenticated, continue to the next middleware or handler
 		return ctx.Next()
 

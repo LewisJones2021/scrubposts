@@ -2,7 +2,7 @@
 <div class="signup-container">
   <div class="signup-form">
     <h2>Sign up to get started</h2>
-    <form action="/signup" method="post">
+    <form hx-post="/signup" hx-target="#errorMessage">
       <input
         type="email"
         name="email"
@@ -11,6 +11,7 @@
         type="password"
         name="password"
         placeholder="Please enter a password" />
+      <div id="errorMessage"></div>
       <button type="submit">Sign Up</button>
     </form>
   </div>

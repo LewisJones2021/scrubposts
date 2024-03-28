@@ -664,3 +664,8 @@ button a {
     height: 25px;
   }
 }
+
+#errorMessage{
+  color:red;
+  margin: 5px;
+}

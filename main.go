@@ -97,9 +97,6 @@ func main() {
 	// api endpoint for the viewpost page.
 	app.Get("/viewPost", middleware.IsAuthenticated(), func(c *fiber.Ctx) error {
 
-		// Assuming isAuthenticated is true after successful authentication
-		isAuthenticated := true
-
 		// Get the selected hashtag from the query parameters
 		selectedHashtag := c.Query("hashtags")
 		fmt.Println("fetched hashtags", selectedHashtag)
@@ -164,7 +161,6 @@ func main() {
 			"Posts":             posts,
 			"SelectedHashtag":   selectedHashtag,
 			"AvailableHashtags": availableHashtags,
-			"IsAuthenticated":   isAuthenticated,
 		})
 	})
 
@@ -247,6 +243,7 @@ func main() {
 
 	// post endpoint to upload image
 	app.Post("/upload", func(c *fiber.Ctx) error {
+
 		// Parse the form data, including file uploads
 		form, err := c.MultipartForm()
 		if err != nil {

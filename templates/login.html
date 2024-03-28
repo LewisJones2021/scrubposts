@@ -1,9 +1,10 @@
 <div class="login-container">
   <div class="login-form">
     <h2>Login</h2>
-    <form action="/login" method="post">
+    <form hx-post="/login" hx-target="#errorMessage">
       <input type="email" name="email" placeholder="Email Address" required />
       <input type="password" name="password" placeholder="Password" required />
+      <div id="errorMessage"></div>
       <button type="submit">Login</button>
       <p>Dont have an account? <a href="/signup">Click here </a>to sign up</p>
     </form>
