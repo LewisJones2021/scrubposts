@@ -13,9 +13,9 @@
     <header>
       <a href="/viewPost"><h1 class="logo">ScrubPosts</h1></a>
       <div class="right-side">
+        {{if .IsAuthenticated}}
         <button class="uploadAPost"><a href="/upload">Upload A Post</a></button>
         <!-- Show logout button if user is authenticated -->
-        {{if .IsAuthenticated}}
           <a href="/logout" class="logout-button">
             <!-- Include the Font Awesome icon here -->
             <i class="fas fa-sign-in-alt"></i>

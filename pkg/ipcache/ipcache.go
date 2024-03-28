@@ -5,8 +5,6 @@ import (
 	"log/slog"
 	"sync"
 	"time"
-
-	"github.com/lewisjones2021/scrubposts/pkg/background"
 )
 
 // cacheExpirationTime represents the duration, in minutes,
@@ -35,7 +33,9 @@ func New() *Cache {
 	}
 
 	// clear the ip cache every 5 minutes
-	background.Go(BackgroundCacheClearer(c))
+	// background.Go(BackgroundCacheClearer(c))
+
+	go BackgroundCacheClearer(c)
 
 	return c
 }

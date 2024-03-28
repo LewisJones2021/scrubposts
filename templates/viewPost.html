@@ -18,7 +18,7 @@
 
   {{ range .Posts}}
   <div class="postFeed" id="postFeed">
-    <p>{{.DisplayTime}}</p>
+    <p>Date Posted: {{.DisplayTime}}</p>
     <div class="post-images">
       {{if .PhotoURL}}
       <img src="{{.PhotoURL}}" />
@@ -28,9 +28,9 @@
     </div>
     <h3>{{.Title}}</h3>
     <h4>{{.Description}}</h4>
+
     <div class="hashtags-likes">
       <p class="hashtagsPosts">{{.Hashtags}}</p>
-
       <button
         class="likes-button"
         hx-post="/like/{{.ID}}"
@@ -39,6 +39,28 @@
       </button>
       <span class="like-count" id="likeCount{{ .ID }}">{{.Likes}}</span>
     </div>
+    <div class="comments">
+      <div class="new-comment-container">
+        <form
+          id="comment-form"
+          hx-post="/comments"
+          hx-target=".comments-container"
+          hx-swap="afterbegin"
+          hx-on::after-request="if(event.detail.successful) this.reset()">
+          <textarea
+            name="comment"
+            placeholder="Write your comment here..."></textarea>
+          <input type="hidden" value="{{.ID}}" name="PostID" />
+          <button type="submit"><i class="fas fa-comment"></i></button>
+        </form>
+      </div>
+      <div class="comments-container">
+        {{ range .Comment}}
+        <div class="comment">{{.Comment}}</div>
+        {{end}}
+      </div>
+    </div>
+
+    {{end}}
   </div>
-  {{end}}
 </div>

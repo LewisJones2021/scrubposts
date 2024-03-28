@@ -169,7 +169,6 @@ body {
   border-radius: 5px;
 }
 
-
 @media screen and (max-width: 600px) {
   .success-post {
     padding: 20px; /* Adjusted padding */
@@ -265,13 +264,13 @@ body {
   border-color: #218838; /* Change border color on hover */
 }
 
-.hashtags-likes{
+.hashtags-likes {
   display: flex;
   align-items: center;
 }
-.hashtags-likes i{
-display: block;
-color: green;
+.hashtags-likes i {
+  display: block;
+  color: green;
 }
 .filter-button-div {
   display: flex;
@@ -447,14 +446,12 @@ button a {
   }
 }
 
-
 /* sign up + login */
 .signup-container {
   display: flex;
   justify-content: center;
   align-items: center; /* Vertically center the container */
   height: 100vh; /* Make the container take up the full height of the viewport */
-
 }
 
 .signup-form {
@@ -468,7 +465,7 @@ button a {
 
 .signup-form h2 {
   text-align: center;
-  color:  #218838;
+  color: #218838;
   font-weight: bold;
   font-size: 24px;
   margin-bottom: 20px;
@@ -584,22 +581,86 @@ button a {
   }
 }
 
-.login-form p{
+.login-form p {
   margin: 10px auto;
 }
 
-.login-form a{
+.login-form a {
   color: #218838;
 }
 
-.login-form a:hover{
+.login-form a:hover {
   color: #218838;
   font-weight: bolder;
 }
 
-.fa-sign-in-alt{
-  color:white;
+.fa-sign-in-alt {
+  color: white;
 }
-.logout-button .fa-sign-in-alt:hover{
+.logout-button .fa-sign-in-alt:hover {
   color: rgb(156, 16, 16);
+}
+
+.comments{
+  width: 100%;
+}
+
+#comments-container  {
+    margin-top: 20px;
+    width:fit-content;
+}
+
+#comment-form {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+
+}
+
+#comment-form textarea {
+    width: 90%;
+    height: 40px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+}
+
+#comments-container {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#comment-form i {
+  color: #30c379;
+  font-size: 30px;
+}
+
+#comment-form:hover i {
+  color: #218838;
+}
+
+
+.comment {
+  width: fit-content;
+  margin-top: 5px;
+  padding: 15px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media screen and (max-width: 600px) {
+  #comment-form i {
+    font-size: 20px;
+  }
+  
+  #comment-form textarea {
+    height: 25px;
+  }
 }

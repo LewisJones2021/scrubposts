@@ -138,6 +138,11 @@ func LoginSubmit(db *sql.DB) fiber.Handler {
 				return err
 			}
 
+			// check hashed password matches stored pasword
+			if err := bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(password)); err != nil {
+				return c.Status(fiber.StatusUnauthorized).SendString("Invalid email or password during login")
+			}
+
 			// Generate JWT token
 			token, err := generateJWT(email)
 			if err != nil {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
+	"github.com/lewisjones2021/scrubposts/comments"
 	"github.com/lewisjones2021/scrubposts/middleware"
 	"github.com/lewisjones2021/scrubposts/pkg/ipcache"
 	"github.com/lewisjones2021/scrubposts/users"
@@ -19,18 +20,19 @@ import (
 
 // data object (struct) that represent the Post fields.
 type Post struct {
-	ID                int       `json:"id"`
-	Title             string    `json:"title"`
-	Description       string    `json:"description"`
-	PhotoURL          string    `json:"photo_url"`
-	PhotoURLAfter     string    `json:"photo_url_after"`
-	DateCreated       time.Time `json:"date_created"`
-	DisplayTime       string    `json:"display_time"`
-	Hashtags          string    `json:"hashtags"`
-	SelectedHashtag   string    `json:"selectedHashtags"`
-	AvailableHashtags string    `json:"availableHashtags"`
-	Likes             int       `json:"likes"`
-	IsAuthenticated   bool      `json:"is_authenticated"`
+	ID                int                `json:"id"`
+	Title             string             `json:"title"`
+	Description       string             `json:"description"`
+	PhotoURL          string             `json:"photo_url"`
+	PhotoURLAfter     string             `json:"photo_url_after"`
+	DateCreated       time.Time          `json:"date_created"`
+	DisplayTime       string             `json:"display_time"`
+	Hashtags          string             `json:"hashtags"`
+	SelectedHashtag   string             `json:"selectedHashtags"`
+	AvailableHashtags string             `json:"availableHashtags"`
+	Likes             int                `json:"likes"`
+	IsAuthenticated   bool               `json:"is_authenticated"`
+	Comment           []comments.Comment `json:"comment"`
 }
 
 func main() {
@@ -78,6 +80,9 @@ func main() {
 	// logout endpoint
 	app.Get("/logout", middleware.IsAuthenticated(), users.LogoutHandler)
 
+	// endpoint for creating a comment
+	app.Post("/comments", comments.PostComment(db))
+
 	// get endpoints
 
 	// define the route for the HTMX homepage
@@ -88,6 +93,7 @@ func main() {
 	app.Get("/upload", middleware.IsAuthenticated(), func(c *fiber.Ctx) error {
 		return c.Render("postForm", fiber.Map{})
 	})
+
 	// api endpoint for the viewpost page.
 	app.Get("/viewPost", middleware.IsAuthenticated(), func(c *fiber.Ctx) error {
 
@@ -97,14 +103,14 @@ func main() {
 		// Get the selected hashtag from the query parameters
 		selectedHashtag := c.Query("hashtags")
 		fmt.Println("fetched hashtags", selectedHashtag)
-		query := "SELECT id, title, description, photo_url, photo_url_after, hashtags, date_created, likes FROM posts "
+		query := "SELECT id, title, description, photo_url, photo_url_after, hashtags, date_created, likes FROM posts"
 		fmt.Println(query)
 
 		// If a hashtag is provided, modify the query to filter posts by the hashtag
 		if selectedHashtag != "" {
-			query += "WHERE hashtags LIKE '%" + selectedHashtag + "%'"
+			query += " WHERE hashtags LIKE '%" + selectedHashtag + "%'"
 		}
-		query += "ORDER BY date_created DESC"
+		query += " ORDER BY date_created DESC"
 
 		// fetch data from the db
 		rows, err := db.Query(query)
@@ -132,6 +138,24 @@ func main() {
 			fmt.Println(posts[i].DisplayTime)
 		}
 
+		// Fetch comments for each post
+		for i := range posts {
+			commentsRows, err := db.Query("SELECT comment_id, user_id, comment, created_at FROM comments WHERE post_id = $1 ORDER BY created_at DESC LIMIT 5", posts[i].ID)
+			if err != nil {
+				return err
+			}
+			defer commentsRows.Close()
+
+			var postComments []comments.Comment
+			for commentsRows.Next() {
+				var comment comments.Comment
+				if err := commentsRows.Scan(&comment.CommentID, &comment.UserID, &comment.Comment, &comment.CreatedAt); err != nil {
+					return err
+				}
+				postComments = append(postComments, comment)
+			}
+			posts[i].Comment = postComments
+		}
 		// Set up a slice of available hashtags for the form
 		availableHashtags := []string{"bathrooms", "kitchens", "windows", "ovens"}
 
