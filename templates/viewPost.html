@@ -54,13 +54,21 @@
           <button type="submit"><i class="fas fa-comment"></i></button>
         </form>
       </div>
-      <div class="comments-container">
+      <div class="comments-container comment-{{.ID}}">
         {{ range .Comment}}
         <div class="comment">{{.Comment}}</div>
         {{end}}
       </div>
+      <div class="showComments">
+        <button
+          hx-get="/comments/{{.ID}}"
+          hx-target=".comments-container.comment-{{.ID}}"
+          hx-swap="innerHTML"
+          type="button">
+          Show All Comments
+        </button>
+      </div>
     </div>
-
     {{end}}
   </div>
 </div>

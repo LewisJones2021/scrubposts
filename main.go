@@ -83,6 +83,10 @@ func main() {
 	// endpoint for creating a comment
 	app.Post("/comments", comments.PostComment(db))
 
+	// endpoint for getting cdomments
+	// Define server-side endpoint to expect post ID as a route parameter
+	app.Get("/comments/:post_id", comments.FetchAllComments(db))
+
 	// get endpoints
 
 	// define the route for the HTMX homepage
@@ -137,7 +141,7 @@ func main() {
 
 		// Fetch comments for each post
 		for i := range posts {
-			commentsRows, err := db.Query("SELECT comment_id, user_id, comment, created_at FROM comments WHERE post_id = $1 ORDER BY created_at DESC LIMIT 5", posts[i].ID)
+			commentsRows, err := db.Query("SELECT comment_id, user_id, comment, created_at FROM comments WHERE post_id = $1 ORDER BY created_at DESC LIMIT 2", posts[i].ID)
 			if err != nil {
 				return err
 			}

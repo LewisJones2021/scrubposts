@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -12,41 +13,47 @@ import (
 type Comment struct {
 	CommentID int       `json:"comment_id"`
 	UserID    int       `json:"user_id"`
-	CreatedAt time.Time `json:"created_at`
+	CreatedAt time.Time `json:"created_at"`
 	Comment   string    `json:"comment"`
 	PostID    int       `json:"post_id"`
 }
 
-// FetchAllComments fetches all comments from the database
 func FetchAllComments(db *sql.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		rows, err := db.Query("SELECT comment_id, user_id, created_at, comment FROM comments")
+
+		postIdStr := c.Params("post_id")
+		fmt.Println("postIdStr:", postIdStr)
+
+		// Convert postIdStr to an integer
+		postId, err := strconv.Atoi(postIdStr)
 		if err != nil {
+			fmt.Println("error converting postIdStr to integer:", err)
+			return err
+		}
+
+		// Fetch all comments for the specified post
+		rows, err := db.Query("SELECT comment_id, user_id, created_at, comment FROM comments WHERE post_id = $1", postId)
+		if err != nil {
+			fmt.Println("error fetching comments ", err)
 			return err
 		}
 		defer rows.Close()
+
 		var comments []Comment
 		for rows.Next() {
 			var comment Comment
 			err := rows.Scan(&comment.CommentID, &comment.UserID, &comment.CreatedAt, &comment.Comment)
 			if err != nil {
+				fmt.Println("error scanning into comment", err)
 				return err
 			}
 			comments = append(comments, comment)
-
-			if err := rows.Err(); err != nil {
-				return err
-
-			}
-
 		}
-		// Return success response
-		return c.Render("comment", fiber.Map{
-			"Comment": comments,
-		})
-
+		// Return success response with comments data
+		return c.Render("showComments", fiber.Map{
+			"Comments": comments,
+		}, "layouts/empty") // Return an empty layout to prevent rendering of the entire layout
 	}
-
 }
 
 // func to post comments
